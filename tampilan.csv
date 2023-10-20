@@ -1,0 +1,8 @@
+address	Name	Text
+root	Menu Utama	"-------------------------------------
+Selamat Datang di Qlontong 
+------------------------------------
+Pilih menu yang anda mau: 
+1. Catat Penjualan 
+2. Lihat Rincian Penjualan 
+3. lain lain"
