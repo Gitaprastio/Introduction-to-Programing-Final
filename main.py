@@ -54,10 +54,11 @@ class FungsiDasar:
         new_row['Jam'] = now.strftime('%H:%M:%S')
 
         self._transaksi_df.loc[len(self._transaksi_df)+1] = new_row
+
         self.simpan_transaksi()
 
-class Analytics(FungsiDasar):
-    
+class Analytics:
+    @staticmethod
     def summary_per_IdBarang(transaksi_df): 
         transaksi_df['NilaiTransaksi'] = transaksi_df['Jumlah'] * transaksi_df['Harga']
         transaksi_beli_df = transaksi_df[transaksi_df['JenisTransaksi'] == 'Beli']
@@ -87,25 +88,63 @@ class AppUI:
             self.tampilan_df = None
 
     def show_ui(self, address):
-        if self.tampilan_df is None:
-            print("Tampilan DataFrame belum diinisialisasi.")
-            return
         try:
-            text = self.tampilan_df[self.tampilan_df['Method'] == 'Body']
-            text = self.tampilan_df[self.tampilan_df['Address'] == address]['Text'].iloc[0]
+            text = self.tampilan_df[(self.tampilan_df['Method'] == 'Body') & (self.tampilan_df['Address'] == address)]['Text'].iloc[0]
             print(str(text))
         except IndexError:
-            print(f"Alamat {address} tidak ditemukan.")
+            print(f"{address} tidak ditemukan. Cek file tampilan.xlsx.")
 
     def get_input(self, address):
-        if self.tampilan_df is None:
-            print("Tampilan DataFrame belum diinisialisasi.")
-            return
         try:
-            text = self.tampilan_df[self.tampilan_df['Method'] == 'Input']
-            text = self.tampilan_df[self.tampilan_df['Address'] == address]['Input'].iloc[0]
+            text = self.tampilan_df[(self.tampilan_df['Method'] == 'Input') & (self.tampilan_df['Address'] == address)]['Text'].iloc[0]
             user_input = input(str(text) + ": ")
             return user_input
         except IndexError:
-            print(f"Alamat {address} tidak ditemukan.")
+            print(f"{address} tidak ditemukan. Cek file tampilan.xlsx.")
 
+
+class AppQlontong(AppUI, FungsiDasar):  
+    def __init__(self, transaksi_df, barang_df):
+        super().__init__()  
+        FungsiDasar.__init__(self, transaksi_df, barang_df)  
+
+    def catat_penjualan(self): 
+        self.show_ui('catat_penjualan')
+        while True:
+            idBarang = self.get_input('catat_penjualan_IdBarang')
+            if self._is_valid_id(idBarang):
+                break
+            else:
+                print("ID Barang tidak valid. Silakan coba lagi.")
+                    
+        namaBarang = self.get_nama_barang(idBarang)
+        print(f"Nama Barang: {namaBarang}, Apakah benar? (y/n)")
+        while True:
+            confirm = self.get_input('catat_penjualan_Confirm_id')  
+            if confirm.lower() == 'y':
+                break
+            elif confirm.lower() == 'n':
+                self.catat_penjualan()  
+            else:
+                print("Input tidak valid. Silakan coba lagi.")
+    
+                    
+        jumlah = self.get_input('catat_penjualan_Jumlah')  
+        harga = self.get_input('catat_penjualan_Harga')  
+        self.catat_transaksi('Jual', idBarang, jumlah, harga)  
+        print(f'Penjualan barang dengan ID {idBarang} sebanyak {jumlah} dengan harga {harga} berhasil dicatat.')
+
+    
+
+    def main_page(self): 
+        AppUI().show_ui('root')
+        input = AppUI().get_input('root')
+        if input == '1': 
+            AppQlontong().catat_penjualan()
+            
+        elif input == 2:
+            print("2")
+
+transaksi_df = pd.read_csv('transaksi.csv')
+barang_df = pd.read_csv('barang.csv')
+AppQlontong(transaksi_df, barang_df).main_page()
