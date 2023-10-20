@@ -36,7 +36,6 @@ class FungsiDasar:
         if JenisTransaksi not in ['Beli', 'Jual']:
             print("JenisTransaksi harus 'Beli' atau 'Jual'")
             return
-        
         try:
             if not self._is_valid_id(IdBarang):
                 return
@@ -45,20 +44,20 @@ class FungsiDasar:
         except ValueError as ve:
             print(f"ID Barang Tidak Ditemukan: {ve}")
             return
-
         new_row = {'JenisTransaksi': JenisTransaksi, 'IdBarang': str(IdBarang), 'Jumlah': Jumlah, 'Harga': Harga}
         highest_id = self._transaksi_df['IdTransaksi'].max()
         new_row['IdTransaksi'] = highest_id + 1
         now = datetime.datetime.now()
         new_row['Tanggal'] = now.strftime('%Y-%m-%d')
         new_row['Jam'] = now.strftime('%H:%M:%S')
-
         self._transaksi_df.loc[len(self._transaksi_df)+1] = new_row
-
         self.simpan_transaksi()
 
-class Analytics:
-    @staticmethod
+class Analytics(FungsiDasar):
+    def __init__(self, transaksi_df, barang_df):
+        super().__init__(transaksi_df, barang_df)
+
+    
     def summary_per_IdBarang(transaksi_df): 
         transaksi_df['NilaiTransaksi'] = transaksi_df['Jumlah'] * transaksi_df['Harga']
         transaksi_beli_df = transaksi_df[transaksi_df['JenisTransaksi'] == 'Beli']
@@ -77,7 +76,7 @@ class Analytics:
         ringkasan_df['Laba'] = ringkasan_df['Penjualan - Total Jual (IDR)'] - ringkasan_df['Penjualan - COGS']
         ringkasan_df['Stok - Jumlah Stok'] = ringkasan_df['Pembelian - Total Beli (Jumlah)'] - ringkasan_df['Penjualan - Total Jual (Jumlah)']
         ringkasan_df['Stok - Total Nilai Stok'] = ringkasan_df['Stok - Jumlah Stok'] * ringkasan_df['Pembelian - Harga Beli Per Unit Rata Rata']
-        return ringkasan_df
+        return ringkasan_df.reset_index()
     
 class AppUI:
     def __init__(self):
@@ -103,10 +102,11 @@ class AppUI:
             print(f"{address} tidak ditemukan. Cek file tampilan.xlsx.")
 
 
-class AppQlontong(AppUI, FungsiDasar):  
+class AppQlontong(AppUI, Analytics ,FungsiDasar):  
     def __init__(self, transaksi_df, barang_df):
         super().__init__()  
         FungsiDasar.__init__(self, transaksi_df, barang_df)  
+        Analytics.__init__(self, transaksi_df, barang_df)
 
     def catat_penjualan(self): 
         self.show_ui('catat_penjualan')
@@ -115,8 +115,7 @@ class AppQlontong(AppUI, FungsiDasar):
             if self._is_valid_id(idBarang):
                 break
             else:
-                print("ID Barang tidak valid. Silakan coba lagi.")
-                    
+                print("ID Barang tidak valid. Silakan coba lagi.")  
         namaBarang = self.get_nama_barang(idBarang)
         print(f"Nama Barang: {namaBarang}, Apakah benar? (y/n)")
         while True:
@@ -127,24 +126,31 @@ class AppQlontong(AppUI, FungsiDasar):
                 self.catat_penjualan()  
             else:
                 print("Input tidak valid. Silakan coba lagi.")
-    
-                    
         jumlah = self.get_input('catat_penjualan_Jumlah')  
         harga = self.get_input('catat_penjualan_Harga')  
         self.catat_transaksi('Jual', idBarang, jumlah, harga)  
         print(f'Penjualan barang dengan ID {idBarang} sebanyak {jumlah} dengan harga {harga} berhasil dicatat.')
 
-    
+
+    def analytics(self):
+        self.show_ui('analytics')
+        input = self.get_input('analytics')
+
+        if input == '1':
+            print("1")
+
 
     def main_page(self): 
         AppUI().show_ui('root')
         input = AppUI().get_input('root')
         if input == '1': 
-            AppQlontong().catat_penjualan()
+            AppQlontong(transaksi_df, barang_df).catat_penjualan()
             
         elif input == 2:
-            print("2")
+            self.analytics()
 
 transaksi_df = pd.read_csv('transaksi.csv')
 barang_df = pd.read_csv('barang.csv')
-AppQlontong(transaksi_df, barang_df).main_page()
+
+app = AppQlontong(transaksi_df, barang_df)
+app.main_page()
