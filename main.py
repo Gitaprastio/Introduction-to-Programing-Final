@@ -78,6 +78,13 @@ class Analytics(FungsiDasar):
         ringkasan_df['Stok - Total Nilai Stok'] = ringkasan_df['Stok - Jumlah Stok'] * ringkasan_df['Pembelian - Harga Beli Per Unit Rata Rata']
         return ringkasan_df.reset_index()
     
+    def summary_spesifik_IdBarang(self, transaksi_df, id_barang):
+        atc = self.summary_per_IdBarang(transaksi_df)
+        atc = Analytics.summary_per_IdBarang(transaksi_df)
+        atc = atc[atc['IdBarang'] == id_barang]
+        atc = atc.set_index('IdBarang', drop=True)
+        atc.transpose()
+    
 class AppUI:
     def __init__(self):
         try:
@@ -137,8 +144,15 @@ class AppQlontong(AppUI, Analytics ,FungsiDasar):
         input = self.get_input('analytics')
 
         if input == '1':
-            print("1")
+            self.summary_per_IdBarang(transaksi_df)
+            input("Tekan enter untuk kembali ke main menu")
+            self.main_page()
 
+        elif input == '2':
+            id_barang = input("Masukan ID Barang: ")
+            self.summary_spesifik_IdBarang(transaksi_df, id_barang)
+            input("Tekan enter untuk kembali ke main menu")
+            self.main_page()
 
     def main_page(self): 
         AppUI().show_ui('root')
