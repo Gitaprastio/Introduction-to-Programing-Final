@@ -137,6 +137,7 @@ class AppQlontong(AppUI, Analytics ,FungsiDasar):
         harga = self.get_input('catat_penjualan_Harga')  
         self.catat_transaksi('Jual', idBarang, jumlah, harga)  
         print(f'Penjualan barang dengan ID {idBarang} sebanyak {jumlah} dengan harga {harga} berhasil dicatat.')
+        self.main_page()
 
 
     def analytics(self):

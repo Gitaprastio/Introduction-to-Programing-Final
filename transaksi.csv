@@ -36,3 +36,4 @@ IdTransaksi,JenisTransaksi,IdBarang,Jumlah,Harga,Tanggal,Jam
 35,Jual,S-02,1,40000,2023-10-15,18:04:05
 36,Jual,S-02,1,40000,2023-10-15,18:04:21
 37,Jual,S-01,100,1000,2023-10-21,03:49:23
+38,Jual,S-03,100,100000,2023-10-21,09:23:33
