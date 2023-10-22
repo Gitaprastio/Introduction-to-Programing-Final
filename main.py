@@ -162,7 +162,7 @@ class AppQlontong(AppUI, Analytics ,FungsiDasar):
             AppQlontong(transaksi_df, barang_df).catat_penjualan()
             
         elif input == 2:
-            self.analytics()
+            AppQlontong.analytics()
 
 transaksi_df = pd.read_csv('transaksi.csv')
 barang_df = pd.read_csv('barang.csv')
